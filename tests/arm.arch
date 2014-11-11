@@ -1,0 +1,46 @@
+word 32
+little-endian
+
+signed o
+
+# Condition Code
+table f ["eq", "ne", "cs", "cc", "mi", "pl", "vs", "vc", "hi", "ls", "ge", "lt", "gt", "le", "", "ff"]
+
+# Data processing instructions
+table q ['and', 'eor', 'sub', 'rsb', 'add', 'adc', 'sbc', 'rsc', 'tst', 'teq', 'cmp', 'cmn', 'orr', 'mov', 'bic', 'mvn']
+
+# Shift 
+#   00 LSL 
+#   01 LSR
+#   10 ASR
+#   11 ROR
+table h ["LSL", "LSR", "ASR", "ROR"]
+
+# Byte vs. Word
+table r ["", "b"]
+
+
+# bx
+ffff 0001 0010 1110 1111 1111 0001 aaaa "bx%(f)s r%(a)d"
+
+# data operations shifted immediate
+ffff 001q qqqs bbbb aaaa iiii uuuu uuuu "%(q)si%(f)s%(s)s r%(a)d, r%(b)d, #%(u)d ROR %(i)d"
+
+# data operations register shifted register
+ffff 000q qqqs bbbb aaaa uuuu uhh0 cccc "%(q)s%(f)s%(s)s r%(a)d, r%(b)d, r%(c)d %(h)s #%(u)d"
+# data operations register shifted immediate
+ffff 000q qqqs bbbb aaaa dddd 0hh1 cccc "%(q)s%(f)s%(s)s r%(a)d, r%(b)d, r%(c)d %(h)s %r(d)d"
+
+# load instruction shifted immediate
+ffff 010p qrt1 bbbb aaaa uuuu uuuu uuuu "ldr%(r)s%(f)s r%(a)d, [r%(b)d, #%(u)x]"
+# load instruction shifted register
+ffff 011p qrt1 bbbb aaaa uuuu uuuu cccc "ldrr%(r)s%(f)s r%(a)d, [r%(b)d, r%(c)d LSL #%(u)x]"
+
+# store instruction shifted immediate
+ffff 010p qrt0 bbbb aaaa uuuu uuuu uuuu "str%(r)s%(f)s r%(a)d, [r%(b)d, #%(u)d] "
+# store instruction shifted register
+ffff 011p qrt0 bbbb aaaa uuuu uuuu cccc "strr%(r)s%(f)s r%(a)d, [r%(b)d, r%(c)d LSL #%(u)x]"
+
+# branch instructions
+ffff 1010 oooo oooo oooo oooo oooo oooo "b%(f)s %(o)08x"
+ffff 1011 oooo oooo oooo oooo oooo oooo "bl%(f)s %(o)08x"

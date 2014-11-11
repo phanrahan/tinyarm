@@ -1,0 +1,29 @@
+#!/usr/bin/env python
+import sys
+from arch import Arch
+
+def dis(arch, bin):
+    for addr in range(0,len(bin),4):
+        b0 = ord(bin[addr+0])
+        b1 = ord(bin[addr+1])
+        b2 = ord(bin[addr+2])
+        b3 = ord(bin[addr+3])
+        if arch.littleendian:
+            code = (b3 << 24) | (b2 << 16) | (b1 << 8) | b0
+        else:
+            code = (b0 << 24) | (b1 << 16) | (b2 << 8) | b3
+        
+        if code != 0:
+            print "%08x" % addr, "%08x" % code, "  ", arch.dis(code, addr+8)
+
+
+filename = 'a.out'
+if len(sys.argv) == 2:
+    filename = sys.argv[1]
+
+arch = Arch('arm.arch')
+
+bin = open(filename).read()
+
+dis(arch, bin)
+
