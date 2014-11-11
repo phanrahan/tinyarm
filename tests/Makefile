@@ -12,7 +12,7 @@ TESTS = badimm.hex \
     str.hex strb.hex strpre.hex strpost.hex \
 	ldr.hex ldrb.hex \
     halt.hex \
-    bne.hex
+    bne.hex bpl.hex
 
 .PHONY: test gold clean
 

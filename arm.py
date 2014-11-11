@@ -12,7 +12,10 @@ __all__ += ['load', 'reset', 'execute', 'arch']
 
 arch = Arch('arm.arch')
 
-TRACE = 0
+TRACEPC = 0
+TRACEREG = 1
+TRACEMEM = 1
+TRACEINST = 0
 
 SIGN = 0x80000000
 DATAMASK = 0xffffffff
@@ -29,7 +32,6 @@ CPSR_V	= (1<<28)
 cpsr = 0
 
 reg = 16*[0]
-pc = 0
 
 def read32( addr ):
     if addr & 0x3:
@@ -61,7 +63,8 @@ def write32( addr, word ):
             sys.exit(0)
         else:
             mem.write32(addr, word)
-            print 'mem[%08x] = %08x' % (addr, word)
+            if TRACEMEM:
+                print 'mem[%08x] = %08x' % (addr, word)
 
 
 def readreg( r ):
@@ -73,15 +76,19 @@ def readreg( r ):
 def writereg( r, data ):
     global reg
     assert r >= 0 and r < 16
-    if TRACE or r != 15:
+    if TRACEREG:
         if r == 15:
-            print 'pc = %08x' % data
+            if TRACEPC:
+                print 'pc  = %08x' % data
         elif r == 14:
-            print 'lr = %08x' % data
+            print 'lr  = %08x' % data
         elif r == 13:
-            print 'sp = %08x' % data
+            print 'sp  = %08x' % data
         else:
-            print 'r%d = %08x' % (r, data)
+            if r >= 10:
+               print 'r%d = %08x' % (r, data)
+            else:
+               print 'r%d  = %08x' % (r, data)
     reg[r]=data
 
 def printcc():
@@ -197,8 +204,8 @@ def barrelshift(i, shift, shifttype):
     return res
 
 def fetch():
-    machinecode=read32(pc)
-    return pc, machinecode
+    pc = readreg(15)-8
+    return pc, read32(pc)
 
 def decode(code, addr):
     return arch.decode( code, addr )
@@ -207,7 +214,8 @@ def execute ():
     addr, code  = fetch()
     inst = decode(code, addr+8)
 
-    #print "%08x" % addr, "%08x:" % code, inst.dis()
+    if TRACEINST:
+        print "%08x" % addr, "%08x:" % code, inst.dis()
 
     nextpc = addr + 4
 
@@ -355,9 +363,9 @@ def execute ():
             if (code & 0x0e000000) == 0x0a000000:
 
                 o = inst.o
-                # the pc must be adjusted to point immediately following the bl
                 if code & 0x01000000: # bl
-                    writereg(14,reg[15]-4)
+                    # pc is be adjusted to point immediately following the bl
+                    writereg(14,readreg(15)-4)
                 nextpc = o
 
             # block data transfer
@@ -367,20 +375,16 @@ def execute ():
         else:
              raise "Uniplemented Instruction"
 
-    global pc
-    pc = nextpc
     writereg(15, nextpc+8)
 
     return 0
 
 
 def reset():
-    global reg, cpsr, pc
+    global reg, cpsr
     for i in range(15):
         reg[0] = 0
-
-    pc = 0
-    reg[15] = pc + 0x08
+    reg[15] = 0x08
 
     cpsr = 0
 

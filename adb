@@ -3,7 +3,7 @@ import os
 import sys
 import signal
 
-from sim import *
+from arm import *
 
 halt = 0
 
@@ -33,7 +33,10 @@ def info():
         elif r == 13:
             print 'sp  = %08x' % reg
         else:
-            print 'r%d  = %08x' % (r, reg)
+            if r >= 10:
+                print 'r%d = %08x' % (r, reg)
+            else:
+                print 'r%d  = %08x' % (r, reg)
     cpsr = readcpsr()
     print 'Z=%d' % (1 if cpsr & CPSR_Z else 0),
     print 'N=%d' % (1 if cpsr & CPSR_N else 0),

@@ -43,6 +43,9 @@ def lsl(n, shift, width=32):
 def lsr(n, shift, width=32):
     return unsigned(n, width) >> shift
 
+def asl(n, shift, width=32):
+    return lsl(n, shift, width)
+
 def asr(n, shift, width=32):
     shift %= width
     return (n >> shift) & mask(32)
@@ -90,4 +93,25 @@ def checks(i, len):
     return i & (max - 1)
 
 
+def negative(num, width=32):
+    return num & (1 << width)
+
+def signed2int(num, width=32):
+    """ Assuming the number is a word in 2s complement,
+    return its Python integer value (which can either be
+    positive or negative).
+    """
+    if negative(num, width):
+        return num - 2 ** width
+    else:
+        return num
+
+def int2signed(num, width=32):
+    """ Given a Python integer, return its 2s complement
+    word representation.
+    """
+    if num < 0:
+        return 2 ** width + num
+    else:
+        return num
 
